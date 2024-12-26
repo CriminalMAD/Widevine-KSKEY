@@ -180,7 +180,8 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
             response = session.post(url=lic_url, headers=headers, data=data, proxies=proxies)
         elif service_name == "stan":
             response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
-            print(response.text)
+        elif service_name == "vidio":
+            response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
         else:
             response = session.post(url=lic_url, headers=headers, params=params, cookies=cookies, data=challenge_bytes, proxies=proxies)
     
@@ -215,7 +216,7 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
             license_b64 = response.json()["ServiceResponse"]["OutData"]["LicenseInfo"]
         elif service_name == "paralelo":
             license_b64 = response.json()["data"]["drm_license"]["license"]
-        elif service_name in ["amcplus", "byutv", "moviestar", "emocje","fubo","ufc", "cignal","mtv","ivi","swaglive", "starzon", "roku", "tfc","exxen", "mewatch","todtv", "channel5", "hotstar", "amateurtv", "itv", "tvdmm"]:
+        elif service_name in ["vidio", "amcplus", "byutv", "moviestar", "emocje","fubo","ufc", "cignal","mtv","ivi","swaglive", "starzon", "roku", "tfc","exxen", "mewatch","todtv", "channel5", "hotstar", "amateurtv", "itv", "tvdmm"]:
             license_b64 = b64encode(response.content).decode()
         elif service_name in ["vtmgo", "videotron", "audible"]:
             license_b64 = response.json()["license"]
