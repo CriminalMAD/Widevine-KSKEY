@@ -26,7 +26,6 @@ def used_proxy(proxy):
 def fetch_manifest(url, proxy):
     logging.info(f"{Fore.YELLOW}CONTENT: {Fore.RED}{url}{Fore.RESET}")
     print(Fore.MAGENTA + "=============================================================================================================\n")
-
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"}
     session = used_proxy(proxy)
     
@@ -76,7 +75,7 @@ def extract_kid_and_pssh_from_mpd(manifest):
         return None
 
 def kid_to_pssh(kid):
-    url = "http://127.0.0.1:1337/dev/widevine/kid_to_pssh"
+    url = "https://dev.kepala-pantas.xyz/dev/widevine/kid_to_pssh"
     data = {"kid": kid}
     response = requests.post(url, json=data)
     pssh = response.json()["responseData"]["pssh"]
@@ -84,17 +83,14 @@ def kid_to_pssh(kid):
 
 def get_pssh(url: str, proxy=None) -> Optional[str]:
     try:
-        # Fetch the manifest based on the URL type (MPD or M3U8)
         manifest = fetch_manifest(url, proxy)
         if not manifest:
             logging.error(f"Failed to fetch manifest from: {url}")
             return None
 
-        # Handling .mpd file URLs
         if '.mpd' in url:
             pssh = extract_kid_and_pssh_from_mpd(manifest)
             if pssh:
-                # Return PSSH in Base64 format after re-encoding
                 pssh_encoded = base64.b64encode(base64.b64decode(pssh)).decode('utf-8')
                 logging.info(f"Successfully extracted PSSH from MPD: {pssh_encoded[:50]}...")  # Log part of the encoded PSSH for verification
                 return pssh_encoded
@@ -102,7 +98,6 @@ def get_pssh(url: str, proxy=None) -> Optional[str]:
                 logging.error("Failed to extract PSSH from MPD manifest.")
                 return None
 
-        # Handling .m3u8 file URLs
         elif '.m3u8' in url:
             m3u8_obj = fetch_m3u8(url)
             if not m3u8_obj:
@@ -116,7 +111,6 @@ def get_pssh(url: str, proxy=None) -> Optional[str]:
                 logging.error("Failed to extract PSSH from M3U8 manifest.")
                 return None
 
-        # If the manifest URL type is unsupported
         logging.error("Unsupported manifest type or failed extraction.")
         return None
 

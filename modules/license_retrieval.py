@@ -121,14 +121,14 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
         elif service_name == "skyshowtime":
             token_url = 'https://ovp.skyshowtime.com/auth/tokens'
             vod_url = 'https://ovp.skyshowtime.com/video/playouts/vod'
-            region = cookies.get('activeTerritory')
+            region = cookies['activeTerritory']
             user_token = get_user_token(token_url, cookies, region)
             video_url = content_id
             vod_request = get_vod_request(vod_url, region, user_token, video_url)
-            license_url = vod_request.get('protection', {}).get('licenceAcquisitionUrl')
-            manifest_url = vod_request.get('asset', {}).get('endpoints', [{}])[0].get('url')
-            pssh = get_pssh_from_mpd(manifest_url)
-            response = session.post(url=license_url, headers=headers, cookies=cookies, data=challenge_bytes, proxies=proxy)
+            license_url = vod_request['protection']['licenceAcquisitionUrl']
+            manifest_url = vod_request['asset']['endpoints'][0]['url']
+            pssh = get_pssh(manifest_url)
+            response = requests.post(url=license_url, headers=headers, data=challenge, proxies=proxy)
         elif service_name in ["emocje", "virgintv","udemy"]:
             response = session.post(url=lic_url, headers=headers, params=params, cookies=cookies, data=challenge_bytes, proxies=proxies)
         elif service_name in ["oneplus","tfc"]:
@@ -178,6 +178,9 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
             data["params"]["object"] = challenge_b64
             data = json.dumps(data)
             response = session.post(url=lic_url, headers=headers, data=data, proxies=proxies)
+        elif service_name == "stan":
+            response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
+            print(response.text)
         else:
             response = session.post(url=lic_url, headers=headers, params=params, cookies=cookies, data=challenge_bytes, proxies=proxies)
     

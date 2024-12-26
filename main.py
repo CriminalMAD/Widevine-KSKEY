@@ -88,6 +88,7 @@ def setup_proxy(args):
 def main():
     init(autoreset=True)
     clear_screen()
+    banners()
     
     if len(sys.argv) == 1:
         banners()
@@ -120,13 +121,17 @@ def main():
 def handle_other_services(args, headers):
     proxy = setup_proxy(args)
     pssh = None
+    
+    if args.pssh:
+        pssh = args.pssh
+        
     if args.kid:
         logging.info(f"{Fore.YELLOW}KEYID (KID): {Fore.GREEN}{args.kid}{Fore.RESET}")
         pssh = kid_to_pssh(args.kid)
         if not pssh:
             logging.error("Failed to convert KID to PSSH.")
             sys.exit(1)
-
+        
     elif args.manifest_url:
         manifest = fetch_manifest(args.manifest_url, proxy)
         if not manifest:
@@ -150,8 +155,11 @@ def handle_other_services(args, headers):
         elif args.manifest_url and args.service == "learnyst":
             handle_learnyst_service(manifest_url=args.manifest_url, lr_token=args.lr_token)
         else:
-            logging.error("Unsupported manifest type.")
-            sys.exit(1)
+            keys = get_license_keys(args.pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
+            if keys:
+                proceed_with_download(args, keys, proxy, headers)
+            else:
+                logging.error("No valid license keys obtained. Cannot proceed with download.")
 
     keys = get_license_keys(pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
     if keys:
@@ -207,5 +215,6 @@ def confirm_user_proceed():
         return False
 
 if __name__ == "__main__":
-    
+    clear_screen()
+    banners()
     main()
