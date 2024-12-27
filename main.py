@@ -9,7 +9,7 @@ from modules.arg_parser import parse_arguments, print_custom_help
 from modules.proxy import init_proxy, proxyscrape, allowed_countries, rotate_proxy, used_proxy, read_proxies_from_file
 from modules.pssh import fetch_manifest, get_pssh_from_m3u8_url, extract_kid_and_pssh_from_mpd, kid_to_pssh
 from modules.utils import banners, print_license_keys, clear_screen, colored_input, parse_headers, extract_widevine_pssh, bypass_manifest_fetching, is_token_valid
-from modules.license_retrieval import get_license_keys, configure_session, handle_learnyst_service
+from modules.license_retrieval import get_widevine_keys, configure_session, handle_learnyst_service
 
 logging = setup_logging()
 config = load_configurations()
@@ -155,13 +155,13 @@ def handle_other_services(args, headers):
         elif args.manifest_url and args.service == "learnyst":
             handle_learnyst_service(manifest_url=args.manifest_url, lr_token=args.lr_token)
         else:
-            keys = get_license_keys(args.pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
+            keys = get_widevine_keys(args.pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
             if keys:
                 proceed_with_download(args, keys, proxy, headers)
             else:
                 logging.error("No valid license keys obtained. Cannot proceed with download.")
 
-    keys = get_license_keys(pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
+    keys = get_widevine_keys(pssh, args.license_url, args.service, args.content_id or args.manifest_url, proxy)
     if keys:
         proceed_with_download(args, keys, proxy, headers)
     else:
@@ -215,6 +215,4 @@ def confirm_user_proceed():
         return False
 
 if __name__ == "__main__":
-    clear_screen()
-    banners()
     main()

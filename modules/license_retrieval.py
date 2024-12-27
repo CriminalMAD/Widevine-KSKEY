@@ -5,6 +5,9 @@ from modules.proxy import used_proxy
 from pywidevine.pssh import PSSH
 from pywidevine.device import Device
 from pywidevine.cdm import Cdm
+from pyplayready.system.pssh import PSSH as PrPSSH
+from pyplayready.cdm import Cdm as PrCdm
+from pyplayready.device import Device as PrDevice
 from services.hbogo import get_license
 from modules.pssh import get_pssh_from_mpd, kid_to_pssh
 from services.skyshowtime import get_user_token, get_vod_request
@@ -23,12 +26,13 @@ cf = ConfigManager()
 cf.initialize()
     
     
-def load_first_wvd_file(directory="device"):
-    wvd_files = glob.glob(os.path.join(directory, '*.wvd'))
-    if wvd_files:
-        return Device.load(wvd_files[0])
+def load_device_file(directory="device"):
+    device_files = glob.glob(os.path.join(directory, '*.wvd')) + glob.glob(os.path.join(directory, '*.prd'))
+    if device_files:
+        return device_files[0]
     else:
-        logging.error("No .wvd files found in the directory.")
+        logging.error("No .wvd or .prd files found in the directory.")
+        return None
 
 def configure_session(proxy):
     session = requests.Session()
@@ -36,7 +40,24 @@ def configure_session(proxy):
         session.proxies.update(proxy)
     return session
 
-def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, kid=None):
+def get_widevine_keys(pssh, lic_url, service_name, content_id=None, proxy=None, kid=None):
+    device_file = load_device_file()
+    if device_file:
+        if device_file.endswith(".wvd"):
+            device_type = "Widevine"
+        elif device_file.endswith(".prd"):
+            device_type = "PlayReady"
+        else:
+            device_type = "Unknown"
+
+        logging.info(f"{Fore.YELLOW}CDMs: {Fore.RED}{os.path.basename(device_file)} ({device_type}){Fore.RESET}")
+        print(Fore.MAGENTA + "=" * 120)
+
+        device = Device.load(device_file)
+    else:
+        logging.error("Failed to load the device file.")
+        return False, None
+    
     logging.info(f"{Fore.YELLOW}SERVICE: {Fore.GREEN}{service_name}")
     print(Fore.MAGENTA + "=" * 120)
     logging.info(f"{Fore.YELLOW}PSSH: {Fore.RED}{pssh}")
@@ -54,7 +75,6 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
         logging.debug(f"License data: {data}")
         return True, []
     
-    device = load_first_wvd_file()
     cdm = Cdm.from_device(device)
     session_id = cdm.open()
     challenge_bytes = cdm.get_license_challenge(session_id, PSSH(pssh))
@@ -249,9 +269,6 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
         
         
 def handle_learnyst_service(manifest_url, lr_token=None):
-    """
-    Handle license retrieval for Learnyst service.
-    """
     if not lr_token:
         lr_token = cf.simple_get("lrToken")
         if not lr_token:
