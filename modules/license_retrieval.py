@@ -13,6 +13,7 @@ from colorama import Fore
 from modules.logging import setup_logging
 from modules.config import load_configurations
 from modules.proxy import used_proxy
+import binascii
 from services.learnyst import ConfigManager, Learnyst, PlayerManager
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -182,6 +183,9 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
             response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
         elif service_name == "vidio":
             response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
+        elif service_name == "youtubetv":
+            data["licenseRequest"] = challenge_b64
+            response = session.post(url=lic_url, params=params, headers=headers, json=data, cookies=cookies, proxies=proxies)
         else:
             response = session.post(url=lic_url, headers=headers, params=params, cookies=cookies, data=challenge_bytes, proxies=proxies)
     
@@ -220,6 +224,8 @@ def get_license_keys(pssh, lic_url, service_name, content_id=None, proxy=None, k
             license_b64 = b64encode(response.content).decode()
         elif service_name in ["vtmgo", "videotron", "audible"]:
             license_b64 = response.json()["license"]
+        elif service_name == "youtubetv":
+            license_b64 = response.json()["license"].replace("-", "+").replace("_", "/")
         elif service_name == "oneplus":
             license_b64 = response.json()["data"]
         elif service_name == "polsat":
