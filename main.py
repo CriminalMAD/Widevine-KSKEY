@@ -8,7 +8,7 @@ from modules.config import load_configurations
 from modules.arg_parser import parse_arguments, print_custom_help
 from modules.proxy import init_proxy, proxyscrape, allowed_countries, rotate_proxy, used_proxy, read_proxies_from_file
 from modules.pssh import fetch_manifest, get_pssh_from_m3u8_url, extract_kid_and_pssh_from_mpd, kid_to_pssh
-from modules.utils import banners, print_license_keys, clear_screen, colored_input, parse_headers, extract_widevine_pssh, bypass_manifest_fetching, is_token_valid
+from modules.utils import banners, print_license_keys, colored_input, parse_headers, extract_widevine_pssh, bypass_manifest_fetching, is_token_valid
 from modules.license_retrieval import get_widevine_keys, configure_session, handle_learnyst_service
 
 logging = setup_logging()
@@ -87,7 +87,6 @@ def setup_proxy(args):
 
 def main():
     init(autoreset=True)
-    clear_screen()
     banners()
     
     if len(sys.argv) == 1:

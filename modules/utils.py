@@ -154,6 +154,7 @@ from sys import stdout
 from colorama import Fore
 
 def banners():
+    clear_screen()
     stdout.write("                                                                                         \n")
     stdout.write(""+Fore.LIGHTRED_EX +"████████╗ ██████╗  ██████╗ ██╗     ██╗  ██╗ ██╗██████╗       ██╗    ██╗██╗██████╗ ███████╗██████╗ ██╗      █████╗ ██╗   ██╗\n")
     stdout.write(""+Fore.LIGHTRED_EX +"╚══██╔══╝██╔═████╗██╔═████╗██║     ██║ ██╔╝███║██╔══██╗      ██║    ██║██║██╔══██╗██╔════╝██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝\n")
