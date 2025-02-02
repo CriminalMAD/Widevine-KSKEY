@@ -117,11 +117,14 @@ def get_widevine_keys(pssh, lic_url, service_name, content_id=None, proxy=None, 
         elif service_name == "apple":
             data['streaming-request']['streaming-keys'][0]['challenge'] = challenge_b64
             response = session.post(url=lic_url, headers=headers, json=data, proxies=proxies)
-        elif service_name in ["byutv", "moviestar", "ppv", "sooka","tonton", "roku", "toggo", "videoland"]:
-            response = session.post(url=lic_url, headers=headers, data=challenge_bytes, proxies=proxies)
-        elif service_name == "youku":
-            data["licenseRequest"] = b64decode(challenge_bytes)
-            response = session.post(url=lic_url, headers=headers, data=data, proxies=proxies)
+        elif service_name in ["spotify", "byutv", "moviestar", "ppv", "sooka","tonton", "roku", "toggo", "videoland"]:
+            response = session.post(url=lic_url, headers=headers, data=data, proxies=proxies, verify=False)
+        elif service_name in ["shaw", "youku"]:
+            new_data = json.loads(data)
+            new_data["licenseRequest"] = challenge_b64
+            print(new_data)
+            response = session.post(url=lic_url, headers=headers, data=new_data, proxies=proxies)
+            print(response.text)
         elif service_name == "newsnow":
             data["licenseRequest"] = challenge_b64
             response = session.post(url=lic_url, headers=headers, cookies=cookies, json=data, proxies=proxies)
@@ -224,7 +227,7 @@ def get_widevine_keys(pssh, lic_url, service_name, content_id=None, proxy=None, 
             license_b64 = b64encode(response_data_bytes).decode()
         elif service_name in ["sooka", "mubi", "dazn", "vdocipher", "newsnow", "beinsports", "viaplay", "peacock"]:
             license_b64 = b64encode(response.content).decode()
-        elif service_name in ["music-amz", "crunchyroll", "videoland"]:
+        elif service_name in ["shaw", "music-amz", "crunchyroll", "videoland"]:
             license_b64 = response.json()["license"]
         elif service_name == "filmo":
             license_b64 = base64.b64encode(response.content)
